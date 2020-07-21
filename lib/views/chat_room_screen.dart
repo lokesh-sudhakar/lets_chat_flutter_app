@@ -1,8 +1,10 @@
+import 'package:chat_app/colors.dart';
+import 'package:chat_app/model/chatroom/chat_users.dart';
 import 'package:chat_app/services/auth.dart';
 import 'package:chat_app/services/database_helper.dart';
 import 'package:chat_app/utils/chat_preference.dart';
+import 'package:chat_app/views/login_page.dart';
 import 'package:chat_app/views/search.dart';
-import 'package:chat_app/views/sign_in_screen.dart';
 import 'package:chat_app/widgets/chat_room_tile.dart';
 import 'package:flutter/material.dart';
 
@@ -13,9 +15,10 @@ class ChatRoomScreen extends StatefulWidget {
 
 class _ChatRoomScreenState extends State<ChatRoomScreen> {
 
-  AuthMethod authMethod = AuthMethod();
+  Auth authMethod = Auth();
   DatabaseHelper dbHelper = DatabaseHelper();
   String curUser;
+  String curUserPhoneNumber;
   Stream chatList;
 
   @override
@@ -28,7 +31,8 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
 
   getActiveChat() async{
     curUser = await ChatPreferences.getUserName();
-    dbHelper.getChatRooms(curUser).then((value) => {
+    curUserPhoneNumber = await ChatPreferences.getPhoneNumber();
+    dbHelper.getChatRooms(curUserPhoneNumber).then((value) => {
     setState(() {
       chatList = value;
     })
@@ -39,18 +43,42 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     return StreamBuilder(
       stream: chatList,
       builder: (context,snapshot) {
-        return !snapshot.hasData ? Container() : ListView.builder(
+        return !snapshot.hasData ? Center(child: CircularProgressIndicator(),) :
+        snapshot.data.documents.length ==0? Container(
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/chat_home.png',
+                  width: 300,
+                  height: 300,
+                  fit: BoxFit.fill,
+                ),
+                Text("Opps, You dont have chats",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),)
+              ],
+            ),
+          ),
+        ):
+        ListView.separated(
           itemCount: snapshot.data.documents.length,
             itemBuilder: (context,index) {
-//              print(" the data loaded -> ${snapshot.data.documents[index].data["users"]}");
-//              List<dynamic> userList = snapshot.data.documents[index].data["users"];
-//              userList.remove(curUser);
-//              String toUser = userList[0];
-//              print("chatroom -> ${userList[0]}");
-//              return ActiveChatItem(userName: toUser,
-//                chatRooomId: snapshot.data.documents[index].data["chatRoomId"],);
-            return ActiveChatItem.usingDoc(document: snapshot.data.documents[index],curUserName: curUser,);
-            },);
+            ChatUsers chatUsers = ChatUsers.fromJson(snapshot.data.documents[index].data);
+            return ActiveChatItem.usingDoc(curUserNumber:curUserPhoneNumber,chatUsers: chatUsers,);
+            },
+          separatorBuilder: (context,index) {
+            return Divider(
+              indent: 100,
+              thickness: 1,
+              endIndent: 20,
+            );
+          },
+        );
       },
     );
   }
@@ -68,22 +96,67 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       onWillPop: _onWillPop,
       child: Scaffold(
         appBar: AppBar(
-          title: Text("Chat Room", style: TextStyle(
-            color: Colors.white,
-          ),
+          elevation: 0,
+          backgroundColor: ThemeColors.white,
+          title: Text("Chats", style: TextStyle(
+              fontSize: 30,
+              color: ThemeColors.black,
+              fontWeight: FontWeight.bold),
           ),
           actions: [
             GestureDetector(
               onTap: () {
-                authMethod.signOut();
-                Navigator.pushReplacement(context, MaterialPageRoute(
-                  builder: (context) => SignInScreen()
-                ));
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text("Logout"),
+                      content: Text("Do you wish to logout from chat application"),
+                      actions: [
+                        FlatButton(
+                          child: Text("No"),
+                          onPressed: (){
+                            Navigator.pop(context);
+                          },
+                        ),
+                        FlatButton(
+                          onPressed: (){
+                            Navigator.pop(context);
+                            authMethod.signOut();
+                            Navigator.pushReplacement(context, MaterialPageRoute(
+                                builder: (context) => LoginPage()
+                            ));
+                          },
+                          child: Text("Yes"),
+                        ),
+
+                      ],
+                    );
+                  }
+                );
+
               },
-              child: Container(
-                padding: EdgeInsets.all(4.0),
-                  child: IconButton(icon: Icon(Icons.exit_to_app,color: Colors.white,),)),
-            )
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 10,horizontal: 10),
+                child: Container(
+                  padding: EdgeInsets.symmetric(vertical: 5,horizontal: 10),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(30),
+                    color: ThemeColors.lightBlue,
+                  ),
+                  child: Row(
+                    children: <Widget>[
+                      Icon(Icons.power_settings_new,color: ThemeColors.blue,size: 16,),
+                      SizedBox(width: 2,),
+                      Text("Logout",style: TextStyle(
+                          fontSize: 16,
+                          color: ThemeColors.black,
+                          fontWeight: FontWeight.bold),),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
         floatingActionButton: FloatingActionButton(
@@ -95,8 +168,14 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
           child: Icon(Icons.search,color: Colors.white,),
         ),
         body: Container(
-          child: Container(
-            child: chatRoomList(),
+          child:
+          Column(
+            mainAxisSize: MainAxisSize.max,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+               Expanded(child: Container(child: chatRoomList())),
+            ],
           ),
         ),
       ),

@@ -1,13 +1,14 @@
+import 'package:chat_app/colors.dart';
+import 'package:chat_app/locator.dart';
+import 'package:chat_app/services/auth.dart';
 import 'package:chat_app/services/database_helper.dart';
 import 'package:chat_app/utils/chat_preference.dart';
-import 'package:chat_app/views/chat_room_screen.dart';
-import 'package:chat_app/views/sign_up_screen.dart';
+import 'package:chat_app/views/login_page.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
-import 'firebase/firebase_messaging_demo.dart';
-
 void main() {
+  setupLocator();
   runApp(ChatApp());
 }
 
@@ -20,6 +21,7 @@ class _ChatAppState extends State<ChatApp> with WidgetsBindingObserver {
   bool _isUserLoggedIn = false;
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   final DatabaseHelper dbHelper = DatabaseHelper();
+  Widget initialRoute = LoginPage();
 
   String _getToken() {
     _firebaseMessaging.getToken().then((token) {
@@ -37,6 +39,15 @@ class _ChatAppState extends State<ChatApp> with WidgetsBindingObserver {
     getUserLoggedIn();
     _getToken();
     _configureFirebaseListners();
+    checkInitialRoute();
+
+  }
+
+  checkInitialRoute()async{
+    Widget route = await Auth().handleAuth();
+    setState(() {
+      initialRoute = route;
+    });
   }
 
   @override
@@ -56,13 +67,15 @@ class _ChatAppState extends State<ChatApp> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: "Chat Application",
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        scaffoldBackgroundColor: Colors.black12,
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
+//        scaffoldBackgroundColor: ThemeColors.white,
+//        primarySwatch: ThemeColors.pink,
       ),
 //      home: FirebaseMessagingDemo(),
-      home: _isUserLoggedIn ? ChatRoomScreen() : SignUpScreen(),
+        home: initialRoute,
+//        home: Otp(),
+//      home: _isUserLoggedIn ? ChatRoomScreen() : SignUpScreen(),
     );
   }
 

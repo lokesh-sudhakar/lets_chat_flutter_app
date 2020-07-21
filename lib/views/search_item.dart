@@ -4,8 +4,7 @@ class SearchItem extends StatelessWidget {
 
   final String name;
   final String email;
-
-
+//  final String photoUrl;
   SearchItem(this.name,this.email, );
 
   @override

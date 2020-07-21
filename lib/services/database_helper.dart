@@ -4,8 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class DatabaseHelper {
 
-  Future getUserByName(String userName) {
-    return Firestore.instance.collection("users").where("name",isEqualTo: userName).getDocuments();
+  Future getUserByNumber(String phoneNumber) async {
+    return await Firestore.instance.collection("users").where("phoneNumber",isEqualTo: phoneNumber).getDocuments();
   }
 
   Future getUserByEmail(String email) {
@@ -13,13 +13,26 @@ class DatabaseHelper {
   }
 
   void uploadUserInfo(userMap) async {
-      Firestore.instance.collection("users").add(userMap);
+    Firestore.instance.collection("users").add(userMap);
   }
 
+  Future<void> uploadUserDataUsingPhoneNumber(String phoneNumber, Map<String,dynamic> userMap) async {
+      return Firestore.instance.collection("users")
+          .document(phoneNumber).setData(userMap,merge: true);
+  }
+
+  Future<DocumentSnapshot> getSavedImageUrl(String phoneNumber) async {
+      return await Firestore.instance.collection("users").document(phoneNumber).get();
+  }
 
   Future createChatRoom(String chatRoomId, Map chatRoomMap) async {
-      await Firestore.instance.collection("ChatRoom")
-          .document(chatRoomId).setData(chatRoomMap);
+      await Firestore.instance.collection("ChatRoom").document(chatRoomId).setData(chatRoomMap,merge: true);
+  }
+
+  Future<String> getChatRoomId(String toUserPhoneNumber,String curUserPhoneNumber) async{
+    QuerySnapshot querySnapshot = await Firestore.instance.collection("ChatRoom")
+        .where("users",arrayContains: [toUserPhoneNumber,curUserPhoneNumber]).getDocuments();
+    return querySnapshot.documents[0].documentID;
   }
 
   addUsersToConversation(String chatRoomId,String userId ,messageMap) async {
@@ -45,15 +58,15 @@ class DatabaseHelper {
         .snapshots();
   }
 
-  setUserActiveOnChat(String curUser,bool isActive, String chatRoomId) async  {
+  setUserActiveOnChat(String curUserPhoneNumber,bool isActive, String chatRoomId) async  {
     Map<String,dynamic> userMap = {
       "active" : isActive
     };
     print("chatRoom id update active -> $chatRoomId");
-    print("cur user update active -> $curUser");
+    print("cur user update active -> $curUserPhoneNumber");
     print("is active update active -> $isActive");
     Firestore.instance.collection("ChatRoom")
-        .document(chatRoomId).collection("user").document(curUser).updateData(userMap).catchError((err)=>{
+        .document(chatRoomId).collection("user").document(curUserPhoneNumber).updateData(userMap).catchError((err)=>{
           print("Error -> ${err.toString()}")
     });
 
@@ -64,39 +77,37 @@ class DatabaseHelper {
         .where("name",isEqualTo: toUser).snapshots();
   }
 
-  getChatRooms(String userName) async {
-    print("username -> $userName");
+  getChatRooms(String phoneNumber) async {
+    print("user phone number -> $phoneNumber");
     return Firestore.instance.collection("ChatRoom")
-        .where("users",arrayContains: userName).snapshots();
+        .where("users",arrayContains: phoneNumber).snapshots();
   }
 
-  Stream<QuerySnapshot> getUnReadMsgCount(String chatRoomId, String myName) {
+  Stream<QuerySnapshot> getUnReadMsgCount(String chatRoomId, String curUserNumber) {
     return  Firestore.instance.collection("ChatRoom")
-        .document(chatRoomId).collection("user").where("userName",isEqualTo: myName).snapshots();
+        .document(chatRoomId).collection("user").where("phoneNumber",isEqualTo: curUserNumber).snapshots();
   }
 
   removeFirebaseTokenOnLogout() async {
     Map<String,dynamic> userMap = {
       "firebase_token" :  ""
     };
-    String email =  await ChatPreferences.getUserEmail();
-    QuerySnapshot querySnapshot = await Firestore.instance.collection("users").where("email",isEqualTo: email).getDocuments();
-    String documentId = querySnapshot.documents[0].documentID;
-    print("removal of token on logout documentid -> $documentId");
+    String phoneNumber =  await ChatPreferences.getPhoneNumber();
+//    QuerySnapshot querySnapshot = await Firestore.instance.collection("users").where("phoneNumber",isEqualTo: phoneNumber).getDocuments();
+//    String documentId = querySnapshot.documents[0].documentID;
+    print("removal of token on logout documentid -> $phoneNumber");
     Firestore.instance.collection("users")
-        .document(documentId).updateData(userMap);
+        .document(phoneNumber).updateData(userMap);
   }
 
   updateUserOnlineStatus(bool isOnline) async{
     Map<String,dynamic> userMap = {
       "online" : isOnline
     };
-    String email =  await ChatPreferences.getUserEmail();
-    if (email!= null && email.isNotEmpty) {
-      QuerySnapshot querySnapshot = await Firestore.instance.collection("users").where("email", isEqualTo:email).getDocuments();
-      String documentId = querySnapshot.documents[0].documentID;
-      print("update status documentid -> $documentId");
-      Firestore.instance.collection("users").document(documentId).updateData(userMap);
+    String phoneNumber =  await ChatPreferences.getPhoneNumber();
+    if (phoneNumber!= null && phoneNumber.isNotEmpty) {
+      print("update status documentid -> $phoneNumber");
+      Firestore.instance.collection("users").document(phoneNumber).updateData(userMap);
     }
   }
 

@@ -22,7 +22,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
   TextEditingController passwordController = TextEditingController();
   TextEditingController emailController = TextEditingController();
-  AuthMethod authMethod = AuthMethod();
+  Auth authMethod = Auth();
   DatabaseHelper dbHelper = DatabaseHelper();
   bool isLoading  = false;
   QuerySnapshot userInfoSnapshot;

@@ -1,17 +1,25 @@
 
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:chat_app/colors.dart';
+import 'package:chat_app/model/message_data.dart';
 import 'package:chat_app/services/database_helper.dart';
 import 'package:chat_app/utils/chat_preference.dart';
+import 'package:chat_app/widgets/chat_bubble.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+
 import '../widgets/common_widgets.dart';
+
 
 class ConversationScreen extends StatefulWidget {
 
   final String toUserName;
   final String chatRoomId;
   final String myName;
+  final String curUserPhoneNumber;
+  final String profileUrl;
 
-  ConversationScreen({this.toUserName,this.chatRoomId,this.myName});
+  ConversationScreen({this.toUserName,this.chatRoomId,this.myName,this.curUserPhoneNumber,this.profileUrl});
 
   @override
   _ConversationScreenState createState() => _ConversationScreenState();
@@ -33,7 +41,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
   @override
   void initState() {
     super.initState();
-    dbhelper.setUserActiveOnChat(widget.myName,true,widget.chatRoomId);
+    dbhelper.setUserActiveOnChat(widget.curUserPhoneNumber,true,widget.chatRoomId);
     dbhelper.getUserStatus(widget.toUserName).then((value) => {
       userDataStream = value
     });
@@ -46,19 +54,20 @@ class _ConversationScreenState extends State<ConversationScreen> {
 
   @override
   void dispose() {
-    dbhelper.setUserActiveOnChat(widget.myName,false,widget.chatRoomId);
+    dbhelper.setUserActiveOnChat(widget.curUserPhoneNumber,false,widget.chatRoomId);
     super.dispose();
   }
 
 
   sendMessage() async {
     if (messageController.text.isNotEmpty) {
-      Map<String , dynamic> messageMap = {
-        "message" : messageController.text,
-        "sentBy" : await ChatPreferences.getUserName(),
-        'time' : DateTime.now().millisecondsSinceEpoch
-      };
-      dbhelper.addConversationMessages(widget.chatRoomId, messageMap);
+      MessageData chatMessage = MessageData(
+        message: messageController.text,
+        sentBy: await ChatPreferences.getPhoneNumber(),
+        timeStamp: DateTime.now().millisecondsSinceEpoch,
+        sentByUser: widget.myName
+      );
+      dbhelper.addConversationMessages(widget.chatRoomId, chatMessage.toMap());
       messageController.text = "";
     }
   }
@@ -86,8 +95,8 @@ class _ConversationScreenState extends State<ConversationScreen> {
               itemBuilder: (context, index) {
                 print("messages -> ${snapshot.data.documents[index].data["message"]}");
                 print("name => ${widget.myName}");
-                return messageTile(snapshot.data.documents[index].data["message"],
-                    snapshot.data.documents[index].data["sentBy"] == widget.myName);
+                MessageData chatMessage = MessageData.fromMap(snapshot.data.documents[index].data);
+                return ChatBubble(chatMessage:chatMessage,isSentByMe: chatMessage.sentBy == widget.curUserPhoneNumber,);
               }
           ),
         ):Container();
@@ -99,27 +108,97 @@ class _ConversationScreenState extends State<ConversationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Column(
-          children: [
-            Text(widget.toUserName,
-              style: TextStyle(color: Colors.white,fontSize: 16),
-            ),
-            StreamBuilder(
-              stream: userDataStream,
-              builder: (context,snapshot) {
-                return snapshot.hasData? Text(snapshot.data.documents[0].data["online"] ? "Online": "",
-                  style: TextStyle(color: Colors.white,fontSize: 8),
-                ):Container();
-              },
-            ),
-          ],
+        elevation: 0,
+        leading: IconButton(
+          onPressed: () {
+            print("pop");
+            Navigator.pop(context);
+          },
+          icon: Icon(Icons.arrow_back,color: Colors.black,),
+        ),
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.white,
+        flexibleSpace: StreamBuilder(
+            stream: userDataStream,
+            builder: (context,snapshot) {
+              return SafeArea(
+                left: true,
+                child: Container(
+                  padding: EdgeInsets.only(right: 16),
+                  child: Row(
+                    children: <Widget>[
+                      Padding(
+                        padding: EdgeInsets.only(left: 50),
+                      ),
+                      SizedBox(width: 2,),
+                      widget.profileUrl==null || widget.profileUrl.isEmpty?
+                      CircleAvatar(
+                        backgroundColor: Colors.grey.shade200,
+                        backgroundImage: AssetImage("assets/chat_man.png"),
+                        maxRadius: 20,
+                      ):
+                      CachedNetworkImage(
+                        imageUrl: widget.profileUrl,
+                        placeholder: (context, url) => Center(child: CircularProgressIndicator()),
+                        errorWidget: (context, url, error) => const Icon(Icons.person),
+                        imageBuilder: (context, imageProvider) => Container(
+                          height: 40,
+                          width: 40,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(30),
+                            image: DecorationImage(
+                                image: imageProvider,
+                                fit: BoxFit.cover,
+                                ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 12,),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            Text(widget.toUserName,style: TextStyle(fontWeight: FontWeight.w600),),
+                            SizedBox(height: 6,),
+                            snapshot.hasData ? snapshot.data.documents[0].data["online"]?Text("Online",style: TextStyle(color: Colors.green,fontSize: 12),):
+                            Container(height: 0,width: 0,):Container(height: 0,width: 0,),
+                          ],
+                        ),
+                      ),
+                      Icon(Icons.more_vert,color: Colors.grey.shade700,),
+                    ],
+                  ),
+                ),
+              );
+            }
         ),
       ),
+//      AppBar(
+//        title: Column(
+//          children: [
+//            Text(widget.toUserName,
+//              style: TextStyle(color: Colors.white,fontSize: 16),
+//            ),
+//            StreamBuilder(
+//              stream: userDataStream,
+//              builder: (context,snapshot) {
+//                return snapshot.hasData? Text(snapshot.data.documents[0].data["online"] ? "Online": "",
+//                  style: TextStyle(color: Colors.white,fontSize: 8),
+//                ):Container();
+//              },
+//            ),
+//          ],
+//        ),
+//      ),
       body: Container(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Flexible(child: chatMessageList()),
+            Divider(
+              height: 6,
+            ),
             Container(
               alignment: Alignment.bottomCenter,
               child: Container(
@@ -134,28 +213,31 @@ class _ConversationScreenState extends State<ConversationScreen> {
                       child: TextField(
                           controller: messageController,
                           decoration: InputDecoration(
-                            hintText: "Message",
-                            hintStyle: TextStyle(
-                              color: Colors.white70,
-                            ),
-                            border: InputBorder.none,
+                              hintText: "Type message...",
+                              hintStyle: TextStyle(color: Colors.grey.shade500),
+                              border: InputBorder.none
                           ),
                           style: textFieldStyle()),
                     ),
-                    GestureDetector(
-                      onTap: () {
-                        sendMessage();
-                      },
-                      child: Container(
-                        padding: EdgeInsets.symmetric(vertical: 10.0),
-                        child: IconButton(
-                          icon: Icon(
-                            Icons.send,
-                            color: Colors.white,
-                          ),
+                  Container(
+                        padding: EdgeInsets.symmetric(vertical: 10.0,horizontal: 10),
+                        child: FloatingActionButton(
+                          onPressed: (){
+                            sendMessage();
+                          },
+                          child: Icon(Icons.send,color: Colors.white,),
+                          backgroundColor: ThemeColors.blue,
+                          elevation: 0,
                         ),
+
+
+//                        IconButton(
+//                          icon: Icon(
+//                            Icons.send,
+//                            color: Colors.white,
+//                          ),
+//                        ),
                       ),
-                    )
                   ],
                 ),
               ),

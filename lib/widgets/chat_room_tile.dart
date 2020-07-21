@@ -1,55 +1,61 @@
+import 'package:chat_app/colors.dart';
+import 'package:chat_app/model/chatroom/chat_users.dart';
 import 'package:chat_app/services/database_helper.dart';
+import 'package:chat_app/utils/basic_utils.dart';
 import 'package:chat_app/utils/chat_preference.dart';
 import 'package:chat_app/views/conversation_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-
-import 'common_widgets.dart';
 
 class ActiveChatItem extends StatefulWidget {
 
-  final String curUserName;
-  String chatRooomId;
-  int unreadMsgCount;
-  final document;
+  final String curUserNumber;
+  final ChatUsers chatUsers;
 
-//  ActiveChatItem({this.userName, this.chatRooomId,this.unreadMsgCount});
-
-  ActiveChatItem.usingDoc({this.curUserName,this.document});
-
+  ActiveChatItem.usingDoc({this.curUserNumber, this.chatUsers});
 
   @override
   _ActiveChatItemState createState() => _ActiveChatItemState();
 }
 
 class _ActiveChatItemState extends State<ActiveChatItem> {
-
   String curUser;
   DatabaseHelper dbHelper = DatabaseHelper();
   Stream unReadMsgStream;
+  String toUserPhoneNumber;
   String toUserName;
   String chatRoomId;
-
-
+  QuerySnapshot toUserQuerySnapshot;
+  String profileUrl = "";
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
 //    getMyUserName();
-    print(" the data loaded -> ${widget.document.data["users"]}");
-    List<dynamic> userList = widget.document.data["users"];
-    userList.remove(widget.curUserName);
-    toUserName = userList[0];
+    getUnReadMessages();
+  }
+
+  void getUnReadMessages() async {
+    curUser = await ChatPreferences.getUserName();
+    print(" the data loaded -> ${widget.chatUsers.users}");
+    List<dynamic> userList = widget.chatUsers.users;
+    userList.remove(widget.curUserNumber);
+    toUserPhoneNumber = userList[0];
+    toUserQuerySnapshot = await dbHelper.getUserByNumber(toUserPhoneNumber);
+    profileUrl = toUserQuerySnapshot.documents[0].data["imageUrl"];
+    toUserName = toUserQuerySnapshot.documents[0].data["name"];
     print("to tousername => $toUserName");
-    print("to usruser => ${widget.curUserName}");
-    chatRoomId = widget.document.data["chatRoomId"];
-    unReadMsgStream = dbHelper.getUnReadMsgCount(chatRoomId,widget.curUserName);
+    print("to user number => $toUserPhoneNumber");
+    chatRoomId = widget.chatUsers.chatRoomId;
+    unReadMsgStream =
+        dbHelper.getUnReadMsgCount(chatRoomId, widget.curUserNumber);
+    setState(() {});
   }
 
   void getMyUserName() async {
     curUser = await ChatPreferences.getUserName();
     print("to usruser => $curUser");
-
   }
 
   @override
@@ -62,57 +68,93 @@ class _ActiveChatItemState extends State<ActiveChatItem> {
                 builder: (context) => ConversationScreen(
                       toUserName: toUserName,
                       chatRoomId: chatRoomId,
-                      myName: widget.curUserName,
+                      myName: curUser,
+                      curUserPhoneNumber: widget.curUserNumber,
+                      profileUrl: profileUrl,
                     )));
       },
-      child: Container(
-        padding: EdgeInsets.all(10.0),
-        child: ListTile(
-          leading: Container(
-            height: 40,
-            width: 40,
-            child: Center(
-              child: Text(
-                toUserName.substring(0, 1).toUpperCase(),
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                ),
-              ),
-            ),
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.all(Radius.circular(20.0)),
-                color: Colors.blue),
-          ),
-          title: Text(
-            toUserName,
-            style: mediumTextFieldStyle(),
-          ),
-          trailing: StreamBuilder(
-            stream: unReadMsgStream,
-            builder: (context,snapshot) {
-              print("has data -> ${snapshot.hasData}");
-              return snapshot.hasData ? Container(
-                height: 20,
-                width: 20,
-                child: Center(
-                  child: Text(
-                    snapshot.data.documents[0].data["unreadMessages"].toString(),
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
+      child: StreamBuilder(
+          stream: unReadMsgStream,
+          builder: (context, snapshot) {
+            return snapshot.hasData
+                ? Container(
+                    padding: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                    child: ListTile(
+                      leading: profileUrl==null ||profileUrl.isEmpty
+                          ? CircleAvatar(
+                              backgroundColor: Colors.grey.shade200,
+                              backgroundImage:
+                                  AssetImage("assets/chat_man.png"),
+                              maxRadius: 20,
+                            )
+                          : AspectRatio(
+                              aspectRatio: 1 / 1,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    image: DecorationImage(
+                                      fit: BoxFit.cover,
+                                      image: NetworkImage(profileUrl),
+                                    )),
+                              ),
+                            ),
+                      title: Text(
+                        toUserName,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: ThemeColors.black,
+                          fontSize: 18.0,
+                        ),
+                      ),
+                      subtitle: Text(
+                        widget.chatUsers.lastMessage,
+                        style: TextStyle(
+                            color: snapshot.data.documents[0].data["unreadMessages"]>0 ?ThemeColors.blue: Colors.grey.shade500,
+                            fontSize: 12),
+                      ),
+                      trailing: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              BasicUtils.readTimestamp(widget.chatUsers.lastMessageTime),
+                              style: TextStyle(
+                                  color: snapshot.data.documents[0].data["unreadMessages"]>0?ThemeColors.blue: Colors.grey.shade500,
+                                  fontSize: 12),
+                            ),
+                          ),
+                          snapshot.data.documents[0].data["unreadMessages"] > 0
+                              ? Container(
+                                  height: 20,
+                                  width: 22,
+                                  child: Center(
+                                    child: Text(
+                                      snapshot.data.documents[0].data["unreadMessages"].toString(),
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 10,
+                                      ),
+                                    ),
+                                  ),
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(20.0)),
+                                      color: ThemeColors.blue),
+                                )
+                              : Container(
+                                  width: 0,
+                                  height: 0,
+                                ),
+                        ],
+                      ),
                     ),
-                  ),
-                ),
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.all(Radius.circular(20.0)),
-                    color: Colors.green),
-              ): Container(width: 0,height: 0,);
-            },
-
-          ),
-        ),
-      ),
+                  )
+                : Container(
+                    width: 0,
+                    height: 0,
+                  );
+          }),
     );
   }
 }

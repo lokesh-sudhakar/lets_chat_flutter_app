@@ -1,17 +1,40 @@
 import 'package:chat_app/model/user.dart';
 import 'package:chat_app/services/database_helper.dart';
 import 'package:chat_app/utils/chat_preference.dart';
+import 'package:chat_app/views/chat_room_screen.dart';
+import 'package:chat_app/views/login_page.dart';
+import 'package:chat_app/views/registration_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 
-class AuthMethod {
+class Auth {
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final DatabaseHelper dbHelper = DatabaseHelper();
 
   User _userFromFirebaseUser(FirebaseUser user) {
     return user != null ? User(user.uid) : null;
+  }
+
+  handleAuth() async {
+    bool isCompleted = await ChatPreferences.isProfileCompleted();
+    String phoneNumber = await ChatPreferences.getPhoneNumber();
+    return StreamBuilder(
+      stream: _auth.onAuthStateChanged,
+      builder: (context, snapshot)  {
+        if (snapshot.hasData) {
+          if (!isCompleted) {
+            return RegistrationScreen(phoneNumber);
+          } else {
+            return ChatRoomScreen();
+          }
+        } else {
+          return LoginPage();
+        }
+      },
+    );
   }
 
   Future<User> signInWithEmailAndPassword(String email, String password) async {
@@ -48,6 +71,9 @@ class AuthMethod {
         break;
       case "ERROR_OPERATION_NOT_ALLOWED":
         errorMessage = "Signing in with Email and Password is not enabled.";
+        break;
+      case "ERROR_INVALID_VERIFICATION_CODE":
+        errorMessage = "Wrong sms code enterrd";
         break;
       default:
         errorMessage = "An undefined Error happened.";
@@ -87,6 +113,15 @@ class AuthMethod {
     }catch(exception,stactTrace){
       print("exception -> $exception, trace-> $stactTrace");
     }
+  }
+
+  Future<AuthResult> signIn(AuthCredential authResult) async {
+    return await FirebaseAuth.instance.signInWithCredential(authResult);
+  }
+
+  Future<AuthCredential> signInWithOTP(smsCode, verId) async {
+    return  PhoneAuthProvider.getCredential(
+        verificationId: verId, smsCode: smsCode);
   }
 
 }

@@ -25,7 +25,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   TextEditingController usernameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
-  AuthMethod authMethod = AuthMethod();
+  Auth authMethod = Auth();
   DatabaseHelper dbHelper = DatabaseHelper();
   ChatPreferences preferences = ChatPreferences();
   QuerySnapshot userInfoSnapshot;
