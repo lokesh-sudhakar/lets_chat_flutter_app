@@ -42,6 +42,10 @@ class DatabaseHelper {
       print(e.toString());
     });
   }
+  
+  Future<QuerySnapshot> getRegisteredNumbers(List<String> contacts) async {
+    return await Firestore.instance.collection("users").where("phoneNumber",whereIn: contacts).getDocuments();
+  }
 
   addConversationMessages(String chatRoomId, messageMap) {
     Firestore.instance.collection("ChatRoom")

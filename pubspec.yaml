@@ -34,6 +34,8 @@ dependencies:
   cached_network_image: ^2.2.0+1
   get_it: ^4.0.2
   provider: ^4.1.2
+  contacts_service: ^0.4.6
+  permission_handler: ^5.0.1+1
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^0.1.3

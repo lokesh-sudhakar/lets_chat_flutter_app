@@ -45,6 +45,7 @@ class _OtpState extends State<Otp> with SingleTickerProviderStateMixin {
   Timer timer;
   int totalTimeInSeconds;
   bool _hideResendButton;
+  bool showLoadingButton = false;
 
   String userName = "";
   bool didReadNotifications = false;
@@ -55,16 +56,16 @@ class _OtpState extends State<Otp> with SingleTickerProviderStateMixin {
     return new AppBar(
       backgroundColor: Colors.transparent,
       elevation: 0.0,
-      leading: new InkWell(
-        borderRadius: BorderRadius.circular(30.0),
-        child: new Icon(
-          Icons.arrow_back,
-          color: Colors.black54,
-        ),
-        onTap: () {
-          Navigator.pop(context);
-        },
-      ),
+//      leading: new InkWell(
+//        borderRadius: BorderRadius.circular(30.0),
+//        child: new Icon(
+//          Icons.arrow_back,
+//          color: Colors.black54,
+//        ),
+//        onTap: () {
+//          Navigator.pop(context);
+//        },
+//      ),
       centerTitle: true,
     );
   }
@@ -113,7 +114,8 @@ class _OtpState extends State<Otp> with SingleTickerProviderStateMixin {
         _getVerificationCodeLabel,
         _getPhoneNumberLabel,
         _getInputField,
-        _hideResendButton ? _getTimerText : _getResendButton,
+        showLoadingButton ? Center(child: CircularProgressIndicator()):Container(width: 0,height: 0,),
+//        _hideResendButton ? _getTimerText : _getResendButton,
         _getOtpKeyboard
       ],
     );
@@ -167,74 +169,69 @@ class _OtpState extends State<Otp> with SingleTickerProviderStateMixin {
     return new Container(
         height: _screenSize.width - 80,
         child: new Column(
+          mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
-            new Expanded(
-              child: new Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  _otpKeyboardInputButton(
-                      label: "1",
-                      onPressed: () {
-                        _setCurrentDigit(1);
-                      }),
-                  _otpKeyboardInputButton(
-                      label: "2",
-                      onPressed: () {
-                        _setCurrentDigit(2);
-                      }),
-                  _otpKeyboardInputButton(
-                      label: "3",
-                      onPressed: () {
-                        _setCurrentDigit(3);
-                      }),
-                ],
-              ),
+            new Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                _otpKeyboardInputButton(
+                    label: "1",
+                    onPressed: () {
+                      _setCurrentDigit(1);
+                    }),
+                _otpKeyboardInputButton(
+                    label: "2",
+                    onPressed: () {
+                      _setCurrentDigit(2);
+                    }),
+                _otpKeyboardInputButton(
+                    label: "3",
+                    onPressed: () {
+                      _setCurrentDigit(3);
+                    }),
+              ],
             ),
-            new Expanded(
-              child: new Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  _otpKeyboardInputButton(
-                      label: "4",
-                      onPressed: () {
-                        _setCurrentDigit(4);
-                      }),
-                  _otpKeyboardInputButton(
-                      label: "5",
-                      onPressed: () {
-                        _setCurrentDigit(5);
-                      }),
-                  _otpKeyboardInputButton(
-                      label: "6",
-                      onPressed: () {
-                        _setCurrentDigit(6);
-                      }),
-                ],
-              ),
+            new Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                _otpKeyboardInputButton(
+                    label: "4",
+                    onPressed: () {
+                      _setCurrentDigit(4);
+                    }),
+                _otpKeyboardInputButton(
+                    label: "5",
+                    onPressed: () {
+                      _setCurrentDigit(5);
+                    }),
+                _otpKeyboardInputButton(
+                    label: "6",
+                    onPressed: () {
+                      _setCurrentDigit(6);
+                    }),
+              ],
             ),
-            new Expanded(
-              child: new Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  _otpKeyboardInputButton(
-                      label: "7",
-                      onPressed: () {
-                        _setCurrentDigit(7);
-                      }),
-                  _otpKeyboardInputButton(
-                      label: "8",
-                      onPressed: () {
-                        _setCurrentDigit(8);
-                      }),
-                  _otpKeyboardInputButton(
-                      label: "9",
-                      onPressed: () {
-                        _setCurrentDigit(9);
-                      }),
-                ],
-              ),
+            new Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                _otpKeyboardInputButton(
+                    label: "7",
+                    onPressed: () {
+                      _setCurrentDigit(7);
+                    }),
+                _otpKeyboardInputButton(
+                    label: "8",
+                    onPressed: () {
+                      _setCurrentDigit(8);
+                    }),
+                _otpKeyboardInputButton(
+                    label: "9",
+                    onPressed: () {
+                      _setCurrentDigit(9);
+                    }),
+              ],
             ),
-            new Expanded(
+            Flexible(
               child: new Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
@@ -406,13 +403,22 @@ class _OtpState extends State<Otp> with SingleTickerProviderStateMixin {
             _fifthDigit.toString() +
             _sixthDigit.toString();
         try {
+            setState(() {
+              showLoadingButton = true;
+            });
           _auth.signInWithOTP(otp, widget.verificationId).catchError((err) {
             print("Error in otp -> ${err.toString()}");
             clearOtp();
           }).then((AuthCredential authCredentials) =>{
             _auth.signIn(authCredentials).catchError((err) {
+              setState(() {
+                showLoadingButton = false;
+              });
               print("Error in otp -> ${err.toString()}");
             }).then((AuthResult authResult){
+              setState(() {
+                showLoadingButton = false;
+              });
               print("Login successful");
               if (authResult!= null && authResult.user != null) {
                 Navigator.pushReplacement(context, MaterialPageRoute(
@@ -422,6 +428,9 @@ class _OtpState extends State<Otp> with SingleTickerProviderStateMixin {
             })
           });
         } on PlatformException catch (err) {
+          setState(() {
+            showLoadingButton = false;
+          });
           print("Error exception -> ${err.toString()}");
         }
 

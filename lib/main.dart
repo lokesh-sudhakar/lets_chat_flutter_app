@@ -1,4 +1,3 @@
-import 'package:chat_app/colors.dart';
 import 'package:chat_app/locator.dart';
 import 'package:chat_app/services/auth.dart';
 import 'package:chat_app/services/database_helper.dart';

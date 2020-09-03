@@ -60,16 +60,18 @@ class RegistrationViewModel extends BaseViewModel {
     DocumentSnapshot documentSnapshot = await dbHelper.getSavedImageUrl(
         phoneNumber).catchError((err) {
       _userDataSubject.sink.add(UserUploadData.empty(message: err.toString()));
+      _uploadImageSubject.sink.add(ImageUploadResponse(imageUrl:_userDataSubject.stream.value.imageUrl,isLoading: false));
     });
     if (documentSnapshot.data != null) {
       UserUploadData userData = UserUploadData.fromJson(documentSnapshot.data);
       userData.message = "Profile fetched successful";
       _userDataSubject.sink.add(userData);
+      _uploadImageSubject.sink.add(ImageUploadResponse(imageUrl:_userDataSubject.stream.value.imageUrl,isLoading: false));
     } else {
       _userDataSubject.sink.add(
           UserUploadData.empty(message: "user does not exist"));
+      _uploadImageSubject.sink.add(ImageUploadResponse(imageUrl:_userDataSubject.stream.value.imageUrl,isLoading: false));
     }
-    _uploadImageSubject.sink.add(ImageUploadResponse(imageUrl:_userDataSubject.stream.value.imageUrl,isLoading: false));
 
   }
 
@@ -77,7 +79,9 @@ class RegistrationViewModel extends BaseViewModel {
     ImagePicker imagePicker = ImagePicker();
     PickedFile pickedFile = await imagePicker.getImage(
         source: ImageSource.gallery, maxHeight: 200.0, maxWidth: 200.0);
-    uploadImage(File(pickedFile.path), path.basename(pickedFile.path), existingImageUrl);
+    if (pickedFile!= null) {
+      uploadImage(File(pickedFile.path), path.basename(pickedFile.path), existingImageUrl);
+    }
   }
 
   uploadImage(File file, String fileName, String existingImageUrl) async {

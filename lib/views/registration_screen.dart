@@ -38,6 +38,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   FlutterToast flutterToast;
   bool isUploading = false;
   UserUploadData userData;
+  bool showLoading = false;
 
   bool isValidEmail(String email) {
     String p =
@@ -75,6 +76,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     viewModel.uploadDataStream.listen((isSuccessful) {
       debugPrint("submit successful - $isSuccessful");
       if (isSuccessful!= null) {
+        setState(() {
+          showLoading = false;
+        });
         if (isSuccessful) {
           showToast(context, "Submit successful");
           moveToChatListingScreen();
@@ -92,47 +96,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       ));
     });
   }
-
-//  Future getExistingImageProfile() async {
-//    print("cur user phone number${widget.phoneNumber}");
-//    DocumentSnapshot documentSnapshot =
-//        await dbHelper.getSavedImageUrl(widget.phoneNumber).catchError((err) {
-//      setState(() {
-//        userData = UserUploadData.empty();
-//        _showToast(context, err.toString());
-//      });
-//    });
-//    if (documentSnapshot.data != null) {
-//      setState(() {
-//        userData = UserUploadData.fromJson(documentSnapshot.data);
-//        existingImageUrl = userData.imageUrl;
-//        usernameController.text = userData.userName;
-//        statusController.text = userData.status;
-//      });
-//      print("existing image url -> $existingImageUrl");
-//    } else {
-//      setState(() {
-//        userData = UserUploadData.empty();
-//      });
-//    }
-//  }
-
-//  uploadUserData() async {
-//    if (formKey.currentState.validate()) {
-//      UserUploadData userUploadData = UserUploadData(
-//          phoneNumber: widget.phoneNumber,
-//          userName: usernameController.text,
-//          status: statusController.text,
-//          firebaseToken: await ChatPreferences.getFirebaseToken(),
-//          online: true);
-//      dbHelper.uploadUserDataUsingPhoneNumber(
-//          widget.phoneNumber, userUploadData.toJson());
-//      ChatPreferences.saveUserName(usernameController.text);
-//      ChatPreferences.saveProfileCompleted(true);
-//      Navigator.pushReplacement(
-//          context, MaterialPageRoute(builder: (context) => ChatRoomScreen()));
-//    }
-//  }
 
   Future pickImage() async {
     ImagePicker imagePicker = ImagePicker();
@@ -220,7 +183,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       body: StreamBuilder<UserUploadData>(
           stream: viewModel.userDataStream,
           builder: (context, snapshot) {
-            if (!snapshot.hasData) {
+            if (!snapshot.hasData || showLoading) {
               return Center(
                 child: CircularProgressIndicator(),
               );
@@ -302,6 +265,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                             GestureDetector(
                               onTap: () {
                                 if (formKey.currentState.validate()) {
+                                  setState(() {
+                                    showLoading = true;
+                                  });
                                   viewModel.uploadUserData(usernameController.text,
                                       widget.phoneNumber,
                                       statusController.text);

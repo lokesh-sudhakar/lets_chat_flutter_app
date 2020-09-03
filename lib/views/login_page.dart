@@ -73,156 +73,160 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Container(
+        body: Center(
+          child: SingleChildScrollView(
+            child: Container(
       padding: EdgeInsets.all(15.0),
       child: Form(
-        key: formKey,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                children: [
-                  Image.asset(
-                    'assets/welcome_chat_logo.png',
-                    width: 100,
-                    height: 100,
-                    fit: BoxFit.fill,
-                  ),
-                  Text(
-                    "Welcome",
-                    style: TextStyle(
-                      color: ThemeColors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 40,
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.symmetric(vertical: 10),
-                  ),
-                  Text(
-                    "Please verify your phone number to continue",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: ThemeColors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Column(
+            key: formKey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                TextFormField(
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [
-                    WhitelistingTextInputFormatter.digitsOnly,
-                  ],
-                  style: TextStyle(
-                    color: ThemeColors.black,
-                  ),
-                  controller: phoneNumberController,
-                  decoration: new InputDecoration(
-                    focusColor: ThemeColors.blue,
-                    prefixText: "+91",
-                    prefixIcon: Padding(
-                      padding: const EdgeInsets.all(10.0),
-                      child: Image.asset(
-                        'assets/phone_blue.png',
-                        width: 20,
-                        height: 20,
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    children: [
+                      Image.asset(
+                        'assets/welcome_chat_logo.png',
+                        width: 100,
+                        height: 100,
                         fit: BoxFit.fill,
                       ),
-                    ),
-                    labelText: "Enter Phone Number",
-                    fillColor: ThemeColors.blue,
-
-                    border: new OutlineInputBorder(
-                      borderRadius: new BorderRadius.circular(10.0),
-                      borderSide: new BorderSide(),
-                    ),
-                    //fillColor: Colors.green
+                      Text(
+                        "Welcome",
+                        style: TextStyle(
+                          color: ThemeColors.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 40,
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.symmetric(vertical: 10),
+                      ),
+                      Text(
+                        "Please verify your phone number to continue",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: ThemeColors.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
                   ),
-                  validator: (value) {
-                    if (value.isEmpty) {
-                      return "Enter valid number";
-                    } else if (value.length < 10) {
-                      return "number should contain atleast 10 digits";
-                    } else {
-                      return null;
-                    }
-                  },
                 ),
-                StreamBuilder<VerifyNumberResponse>(
-                    stream: viewModel.responseStream,
-                    builder: (context, snapshot) {
-                      bool showLoading = snapshot.hasData
-                          ? snapshot.data.event ==
-                              VerifyPhoneCallbackEvent.loading
-                          : false;
-                      return Padding(
-                        padding: EdgeInsets.all(15.0),
-                        child: Column(
-                          children: [
-                            GestureDetector(
-                              onTap: () {
-                                if (!showLoading &&
-                                    formKey.currentState.validate()) {
-                                  FocusScope.of(context).unfocus();
-                                  viewModel.verifyPhoneNumber(
-                                      phoneNumberController.text);
-                                }
-                              },
-                              child: Container(
-                                padding: EdgeInsets.symmetric(
-                                    vertical: 15, horizontal: 15),
-                                child: Center(
-                                  child: Text(
-                                    "Verify",
-                                    style: TextStyle(
-                                      color: ThemeColors.white,
-                                      fontSize: 16,
+                Column(
+                  children: [
+                    TextFormField(
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        WhitelistingTextInputFormatter.digitsOnly,
+                      ],
+                      style: TextStyle(
+                        color: ThemeColors.black,
+                      ),
+                      controller: phoneNumberController,
+                      decoration: new InputDecoration(
+                        focusColor: ThemeColors.blue,
+                        prefixText: "+91",
+                        prefixIcon: Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: Image.asset(
+                            'assets/phone_blue.png',
+                            width: 20,
+                            height: 20,
+                            fit: BoxFit.fill,
+                          ),
+                        ),
+                        labelText: "Enter Phone Number",
+                        fillColor: ThemeColors.blue,
+
+                        border: new OutlineInputBorder(
+                          borderRadius: new BorderRadius.circular(10.0),
+                          borderSide: new BorderSide(),
+                        ),
+                        //fillColor: Colors.green
+                      ),
+                      validator: (value) {
+                        if (value.isEmpty) {
+                          return "Enter valid number";
+                        } else if (value.length < 10) {
+                          return "number should contain atleast 10 digits";
+                        } else {
+                          return null;
+                        }
+                      },
+                    ),
+                    StreamBuilder<VerifyNumberResponse>(
+                        stream: viewModel.responseStream,
+                        builder: (context, snapshot) {
+                          bool showLoading = snapshot.hasData
+                              ? snapshot.data.event ==
+                                  VerifyPhoneCallbackEvent.loading
+                              : false;
+                          return Padding(
+                            padding: EdgeInsets.all(15.0),
+                            child: Column(
+                              children: [
+                                GestureDetector(
+                                  onTap: () {
+                                    if (!showLoading &&
+                                        formKey.currentState.validate()) {
+                                      FocusScope.of(context).unfocus();
+                                      viewModel.verifyPhoneNumber(
+                                          phoneNumberController.text);
+                                    }
+                                  },
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(
+                                        vertical: 15, horizontal: 15),
+                                    child: Center(
+                                      child: Text(
+                                        "Verify",
+                                        style: TextStyle(
+                                          color: ThemeColors.white,
+                                          fontSize: 16,
+                                        ),
+                                      ),
                                     ),
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(10.0),
+                                        color: showLoading
+                                            ? Colors.grey
+                                            : ThemeColors.blue),
                                   ),
                                 ),
-                                decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(10.0),
-                                    color: showLoading
-                                        ? Colors.grey
-                                        : ThemeColors.blue),
-                              ),
-                            ),
-                            showLoading
-                                ? Padding(
-                                    padding: EdgeInsets.only(top: 20),
-                                    child: Column(
-                                      children: [
-                                        LinearProgressIndicator(),
-                                        SizedBox(
-                                          height: 4,
+                                showLoading
+                                    ? Padding(
+                                        padding: EdgeInsets.only(top: 20),
+                                        child: Column(
+                                          children: [
+                                            LinearProgressIndicator(),
+                                            SizedBox(
+                                              height: 4,
+                                            ),
+                                            Text(
+                                              "Please wait while we are authenticating\n using your phone",
+                                              textAlign: TextAlign.center,
+                                            )
+                                          ],
                                         ),
-                                        Text(
-                                          "Please wait while we are authenticating\n using your phone",
-                                          textAlign: TextAlign.center,
-                                        )
-                                      ],
-                                    ),
-                                  )
-                                : Container(
-                                    width: 0,
-                                    height: 0,
-                                  )
-                          ],
-                        ),
-                      );
-                    }),
+                                      )
+                                    : Container(
+                                        width: 0,
+                                        height: 0,
+                                      )
+                              ],
+                            ),
+                          );
+                        }),
+                  ],
+                ),
               ],
             ),
-          ],
-        ),
       ),
-    ));
+    ),
+          ),
+        ));
   }
 }
