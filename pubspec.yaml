@@ -36,6 +36,7 @@ dependencies:
   provider: ^4.1.2
   contacts_service: ^0.4.6
   permission_handler: ^5.0.1+1
+  marquee: ^1.6.0
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^0.1.3
@@ -68,6 +69,7 @@ flutter:
     - assets/search_not_found.png
     - assets/not_found.png
     - assets/chat_home.png
+    - assets/group_icon.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

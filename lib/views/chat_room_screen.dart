@@ -23,7 +23,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getActiveChat();
     dbHelper.updateUserOnlineStatus(true);
@@ -32,11 +31,9 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   getActiveChat() async {
     curUser = await ChatPreferences.getUserName();
     curUserPhoneNumber = await ChatPreferences.getPhoneNumber();
-    dbHelper.getChatRooms(curUserPhoneNumber).then((value) => {
-          setState(() {
-            chatList = value;
-          })
-        });
+    setState(() {
+      chatList = dbHelper.getChatRooms(curUserPhoneNumber);
+    });
   }
 
   Widget chatRoomList() {
@@ -76,7 +73,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                     itemBuilder: (context, index) {
                       ChatUsers chatUsers = ChatUsers.fromJson(
                           snapshot.data.documents[index].data);
-                      return ActiveChatItem.usingDoc(
+                      return ActiveChatItem(
                         curUserNumber: curUserPhoneNumber,
                         chatUsers: chatUsers,
                       );

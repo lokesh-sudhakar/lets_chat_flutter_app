@@ -2,6 +2,7 @@ import 'package:chat_app/model/user.dart';
 import 'package:chat_app/services/database_helper.dart';
 import 'package:chat_app/utils/chat_preference.dart';
 import 'package:chat_app/views/chat_room_screen.dart';
+import 'package:chat_app/views/group_chat/chat_listing_screen.dart';
 import 'package:chat_app/views/login_page.dart';
 import 'package:chat_app/views/registration_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -28,7 +29,8 @@ class Auth {
           if (!isCompleted) {
             return RegistrationScreen(phoneNumber);
           } else {
-            return ChatRoomScreen();
+            //return ChatRoomScreen();
+            return ChatListingScreen();
           }
         } else {
           return LoginPage();

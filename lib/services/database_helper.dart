@@ -29,6 +29,17 @@ class DatabaseHelper {
       await Firestore.instance.collection("ChatRoom").document(chatRoomId).setData(chatRoomMap,merge: true);
   }
 
+  Future<String> createGroupChat(Map chatRoomMap) async {
+    String documentId;
+    DocumentReference documentReference = await Firestore.instance.collection("ChatRoom").add(chatRoomMap);
+    documentId = documentReference.documentID;
+    Map<String,dynamic> userMap = {
+      "chatRoomId" : documentId
+    };
+    await Firestore.instance.collection("ChatRoom").document(documentId).setData(userMap,merge: true);
+    return documentId;
+  }
+
   Future<String> getChatRoomId(String toUserPhoneNumber,String curUserPhoneNumber) async{
     QuerySnapshot querySnapshot = await Firestore.instance.collection("ChatRoom")
         .where("users",arrayContains: [toUserPhoneNumber,curUserPhoneNumber]).getDocuments();
@@ -73,7 +84,6 @@ class DatabaseHelper {
         .document(chatRoomId).collection("user").document(curUserPhoneNumber).updateData(userMap).catchError((err)=>{
           print("Error -> ${err.toString()}")
     });
-
   }
 
   Future<Stream<QuerySnapshot>> getUserStatus(String toUser)async {
@@ -81,10 +91,10 @@ class DatabaseHelper {
         .where("name",isEqualTo: toUser).snapshots();
   }
 
-  getChatRooms(String phoneNumber) async {
+  Stream<QuerySnapshot> getChatRooms(String phoneNumber)  {
     print("user phone number -> $phoneNumber");
     return Firestore.instance.collection("ChatRoom")
-        .where("users",arrayContains: phoneNumber).snapshots();
+        .where("users",arrayContains: phoneNumber).orderBy("lastMessageTime",descending:true).snapshots();
   }
 
   Stream<QuerySnapshot> getUnReadMsgCount(String chatRoomId, String curUserNumber) {
@@ -128,6 +138,11 @@ class DatabaseHelper {
     print("documentid -> $documentId");
     Firestore.instance.collection("users")
         .document(documentId).updateData(userMap);
+  }
+
+
+  Future<QuerySnapshot> getAllUsers() async {
+    return await Firestore.instance.collection("users").getDocuments();
   }
 
 }

@@ -9,6 +9,13 @@ class UserChatRoomData {
   UserChatRoomData({this.phoneNumber,this.userName,
     this.unreadMessages,this.active});
 
+  UserChatRoomData.fromJson(Map<String, dynamic> map) {
+    this.phoneNumber = map['phoneNumber'];
+    this.userName = map['userName'];
+    this.unreadMessages = map['unreadMessages'];
+    this.active = map['active'];
+  }
+
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     if (this.phoneNumber!= null) data['phoneNumber'] = this.phoneNumber;

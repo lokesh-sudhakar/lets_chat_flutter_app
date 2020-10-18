@@ -8,11 +8,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class ActiveChatItem extends StatefulWidget {
-
   final String curUserNumber;
   final ChatUsers chatUsers;
 
-  ActiveChatItem.usingDoc({this.curUserNumber, this.chatUsers});
+  ActiveChatItem({Key key, this.curUserNumber, this.chatUsers})
+      : super(key: key);
 
   @override
   _ActiveChatItemState createState() => _ActiveChatItemState();
@@ -34,6 +34,13 @@ class _ActiveChatItemState extends State<ActiveChatItem> {
     super.initState();
 //    getMyUserName();
     getUnReadMessages();
+  }
+
+  @override
+  void setState(fn) {
+    if (mounted) {
+      super.setState(fn);
+    }
   }
 
   void getUnReadMessages() async {
@@ -77,78 +84,103 @@ class _ActiveChatItemState extends State<ActiveChatItem> {
           stream: unReadMsgStream,
           builder: (context, snapshot) {
             return snapshot.hasData
-                ? Container(
-                    padding: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                    child: ListTile(
-                      leading: profileUrl==null ||profileUrl.isEmpty
-                          ? CircleAvatar(
-                              backgroundColor: Colors.grey.shade200,
-                              backgroundImage:
-                                  AssetImage("assets/chat_man.png"),
-                              maxRadius: 20,
-                            )
-                          : AspectRatio(
-                              aspectRatio: 1 / 1,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    image: DecorationImage(
-                                      fit: BoxFit.cover,
-                                      image: NetworkImage(profileUrl),
-                                    )),
-                              ),
-                            ),
-                      title: Text(
-                        toUserName,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: ThemeColors.black,
-                          fontSize: 18.0,
-                        ),
-                      ),
-                      subtitle: Text(
-                        widget.chatUsers.lastMessage,
-                        style: TextStyle(
-                            color: snapshot.data.documents[0].data["unreadMessages"]>0 ?ThemeColors.blue: Colors.grey.shade500,
-                            fontSize: 12),
-                      ),
-                      trailing: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(
-                              BasicUtils.readTimestamp(widget.chatUsers.lastMessageTime),
-                              style: TextStyle(
-                                  color: snapshot.data.documents[0].data["unreadMessages"]>0?ThemeColors.blue: Colors.grey.shade500,
-                                  fontSize: 12),
+                ? Column(
+                    children: <Widget>[
+                      Container(
+                        padding:
+                            EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                        child: ListTile(
+                          leading: profileUrl == null || profileUrl.isEmpty
+                              ? CircleAvatar(
+                                  backgroundColor: Colors.grey.shade200,
+                                  backgroundImage:
+                                      AssetImage("assets/chat_man.png"),
+                                  maxRadius: 30,
+                                )
+                              : AspectRatio(
+                                  aspectRatio: 1 / 1,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        image: DecorationImage(
+                                          fit: BoxFit.cover,
+                                          image: NetworkImage(profileUrl),
+                                        )),
+                                  ),
+                                ),
+                          title: Text(
+                            toUserName,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: ThemeColors.black,
+                              fontSize: 18.0,
                             ),
                           ),
-                          snapshot.data.documents[0].data["unreadMessages"] > 0
-                              ? Container(
-                                  height: 20,
-                                  width: 22,
-                                  child: Center(
-                                    child: Text(
-                                      snapshot.data.documents[0].data["unreadMessages"].toString(),
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 10,
-                                      ),
-                                    ),
-                                  ),
-                                  decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.all(
-                                          Radius.circular(20.0)),
-                                      color: ThemeColors.blue),
-                                )
-                              : Container(
-                                  width: 0,
-                                  height: 0,
+                          subtitle: Text(
+                            widget.chatUsers.lastMessage,
+                            style: TextStyle(
+                                color: snapshot.data.documents[0]
+                                            .data["unreadMessages"] >
+                                        0
+                                    ? ThemeColors.blue
+                                    : Colors.grey.shade500,
+                                fontSize: 12),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          trailing: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  BasicUtils.readTimestamp(
+                                      widget.chatUsers.lastMessageTime),
+                                  style: TextStyle(
+                                      color: snapshot.data.documents[0]
+                                                  .data["unreadMessages"] >
+                                              0
+                                          ? ThemeColors.blue
+                                          : Colors.grey.shade500,
+                                      fontSize: 12),
                                 ),
-                        ],
+                              ),
+                              snapshot.data.documents[0]
+                                          .data["unreadMessages"] >
+                                      0
+                                  ? Container(
+                                      height: 20,
+                                      width: 22,
+                                      child: Center(
+                                        child: Text(
+                                          snapshot.data.documents[0]
+                                              .data["unreadMessages"]
+                                              .toString(),
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 10,
+                                          ),
+                                        ),
+                                      ),
+                                      decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(20.0)),
+                                          color: ThemeColors.blue),
+                                    )
+                                  : Container(
+                                      width: 0,
+                                      height: 0,
+                                    ),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
+                      Divider(
+                        indent: 100,
+                        thickness: 1,
+                        endIndent: 20,
+                      ),
+                    ],
                   )
                 : Container(
                     width: 0,

@@ -9,6 +9,7 @@ import 'package:chat_app/services/database_helper.dart';
 import 'package:chat_app/utils/chat_preference.dart';
 import 'package:chat_app/viewmodel/registration_view_model.dart';
 import 'package:chat_app/views/chat_room_screen.dart';
+import 'package:chat_app/views/group_chat/chat_listing_screen.dart';
 import 'package:chat_app/widgets/common_widgets.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -92,7 +93,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   void moveToChatListingScreen() {
     Future.delayed(Duration(milliseconds: 500), () {
       Navigator.pushReplacement(context, MaterialPageRoute(
-          builder: (context) => ChatRoomScreen()
+          builder: (context) =>
+              //ChatRoomScreen()
+              ChatListingScreen()
       ));
     });
   }

@@ -5,7 +5,6 @@ import 'package:chat_app/model/user/user_upload_data.dart';
 import 'package:chat_app/services/database_helper.dart';
 import 'package:chat_app/utils/chat_preference.dart';
 import 'package:chat_app/views/conversation_screen.dart';
-import 'package:chat_app/widgets/common_widgets.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -16,7 +15,6 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-
   bool showLoading = false;
   TextEditingController searchController = TextEditingController();
   DatabaseHelper dbHelper = DatabaseHelper();
@@ -27,7 +25,7 @@ class _SearchScreenState extends State<SearchScreen> {
     setState(() {
       showLoading = true;
     });
-    dbHelper.getUserByNumber("+91"+searchController.text).then((value) => {
+    dbHelper.getUserByNumber("+91" + searchController.text).then((value) => {
           setState(() {
             showLoading = false;
             searchResultSnapshot = value;
@@ -42,45 +40,47 @@ class _SearchScreenState extends State<SearchScreen> {
     illustrationText = "";
   }
 
-  createChatRoomForConversation({String toUserPhoneNumber,String toUserName,String photoUrl}) async{
-
+  createChatRoomForConversation(
+      {String toUserPhoneNumber, String toUserName, String photoUrl}) async {
     String curUser = await ChatPreferences.getUserName();
     String curUserPhoneNumber = await ChatPreferences.getPhoneNumber();
-    List users = [toUserPhoneNumber,curUserPhoneNumber];
+    List users = [toUserPhoneNumber, curUserPhoneNumber];
     String chatRoomId = getChatRoomId(curUserPhoneNumber, toUserPhoneNumber);
-    ChatUsers chatUsers = ChatUsers(chatRoomId: chatRoomId,users: users);
+    ChatUsers chatUsers = ChatUsers(chatRoomId: chatRoomId, users: users);
     print("chatroom id -> $chatRoomId");
-    await dbHelper.createChatRoom(chatRoomId,chatUsers.toJson());
-    UserChatRoomData curUserChatData =UserChatRoomData(phoneNumber: curUserPhoneNumber,
-        active: true,userName: curUser,unreadMessages: 0,);
-    UserChatRoomData toUserChatData =UserChatRoomData(phoneNumber: toUserPhoneNumber,
-      active: false,userName: toUserName,unreadMessages: 0,);
-    await dbHelper.addUsersToConversation(chatRoomId,curUserPhoneNumber,curUserChatData.toJson());
-    await dbHelper.addUsersToConversation(chatRoomId,toUserPhoneNumber,toUserChatData.toJson());
-    Navigator.push(context, MaterialPageRoute(
-        builder: (context) => ConversationScreen(toUserName: toUserName,
-          chatRoomId: chatRoomId,myName: curUser,
-          curUserPhoneNumber: curUserPhoneNumber,profileUrl: photoUrl,)
-    ));
+    await dbHelper.createChatRoom(chatRoomId, chatUsers.toJson());
+    UserChatRoomData curUserChatData = UserChatRoomData(
+      phoneNumber: curUserPhoneNumber,
+      active: true,
+      userName: curUser,
+      unreadMessages: 0,
+    );
+    UserChatRoomData toUserChatData = UserChatRoomData(
+      phoneNumber: toUserPhoneNumber,
+      active: false,
+      userName: toUserName,
+      unreadMessages: 0,
+    );
+    await dbHelper.addUsersToConversation(
+        chatRoomId, curUserPhoneNumber, curUserChatData.toJson());
+    await dbHelper.addUsersToConversation(
+        chatRoomId, toUserPhoneNumber, toUserChatData.toJson());
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => ConversationScreen(
+                  toUserName: toUserName,
+                  chatRoomId: chatRoomId,
+                  myName: curUser,
+                  curUserPhoneNumber: curUserPhoneNumber,
+                  profileUrl: photoUrl,
+                )));
   }
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-
-       /* appBar: AppBar(
-          elevation: 0,
-          backgroundColor: ThemeColors.white,
-          iconTheme: new IconThemeData(color: ThemeColors.blue),
-          title: Text(
-            "Search",
-            style: TextStyle(
-                color: ThemeColors.blue,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),*/
         body: Container(
           color: Colors.black12,
           child: Column(
@@ -97,24 +97,28 @@ class _SearchScreenState extends State<SearchScreen> {
                       onPressed: () {
                         Navigator.pop(context);
                       },
-                      icon: Icon(Icons.arrow_back,color: ThemeColors.blue,),
+                      icon: Icon(
+                        Icons.arrow_back,
+                        color: ThemeColors.blue,
+                      ),
                     ),
                     Flexible(
                       child: Padding(
-                        padding: EdgeInsets.symmetric(vertical: 10,horizontal: 5),
+                        padding:
+                            EdgeInsets.symmetric(vertical: 10, horizontal: 5),
                         child: TextField(
                           onChanged: (String value) {
                             if (value != null) {
                               if (value.length == 10) {
                                 initiateSearch();
-                              } else if (value.isEmpty){
+                              } else if (value.isEmpty) {
                                 setState(() {});
                               }
                             }
                           },
                           controller: searchController,
                           keyboardType: TextInputType.number,
-                          inputFormatters:[
+                          inputFormatters: [
                             WhitelistingTextInputFormatter.digitsOnly,
                           ],
                           maxLength: 10,
@@ -125,22 +129,22 @@ class _SearchScreenState extends State<SearchScreen> {
                             hintStyle: TextStyle(
                               color: Colors.grey.shade600,
                             ),
-                            prefixIcon: Icon(Icons.search,color: Colors.grey.shade400,size: 20,),
+                            prefixIcon: Icon(
+                              Icons.search,
+                              color: Colors.grey.shade400,
+                              size: 20,
+                            ),
                             filled: true,
                             fillColor: Colors.grey.shade100,
                             focusedBorder: OutlineInputBorder(
 //                                borderRadius: BorderRadius.circular(30),
-                                borderSide: BorderSide(
-                                    color: Colors.grey.shade100
-                                )
-                            ),
+                                borderSide:
+                                    BorderSide(color: Colors.grey.shade100)),
                             contentPadding: EdgeInsets.all(8),
                             enabledBorder: OutlineInputBorder(
 //                                borderRadius: BorderRadius.circular(30),
-                                borderSide: BorderSide(
-                                    color: Colors.grey.shade100
-                                )
-                            ),
+                                borderSide:
+                                    BorderSide(color: Colors.grey.shade100)),
                           ),
                         ),
                       ),
@@ -149,7 +153,9 @@ class _SearchScreenState extends State<SearchScreen> {
                 ),
               ),
               Expanded(
-                child: showLoading ? Center(child: CircularProgressIndicator()) : searchList(),
+                child: showLoading
+                    ? Center(child: CircularProgressIndicator())
+                    : searchList(),
               ),
             ],
           ),
@@ -159,65 +165,71 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Widget searchList() {
-    return searchResultSnapshot != null && searchResultSnapshot.documents.length!=0?
-    ListView.builder(
-      itemCount: searchResultSnapshot.documents.length,
-      shrinkWrap: true,
-        itemBuilder: (context, index) {
-      return searchItem(UserUploadData.fromJson(searchResultSnapshot.documents[index].data));
-      })
-        : Container(child: Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Image.asset(
-            'assets/search_not_found.png',
-            width: 300,
-            height: 300,
-            fit: BoxFit.fill,
-          ),
-          Text(searchController.text.length ==10?"Search number is not registered":"",
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.bold
-          ),)
-        ],
-      ),
-    ),);
+    return searchResultSnapshot != null &&
+            searchResultSnapshot.documents.length != 0
+        ? ListView.builder(
+            itemCount: searchResultSnapshot.documents.length,
+            shrinkWrap: true,
+            itemBuilder: (context, index) {
+              return searchItem(UserUploadData.fromJson(
+                  searchResultSnapshot.documents[index].data));
+            })
+        : Container(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(
+                    'assets/search_not_found.png',
+                    width: 300,
+                    height: 300,
+                    fit: BoxFit.fill,
+                  ),
+                  Text(
+                    searchController.text.length == 10
+                        ? "Search number is not registered"
+                        : "",
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                  )
+                ],
+              ),
+            ),
+          );
   }
 
   Widget searchItem(UserUploadData userData) {
-
     return GestureDetector(
-      onTap: () {
+      onTap: () async {
         FocusScope.of(context).unfocus();
-        createChatRoomForConversation(
-            toUserName: userData.userName,
-            toUserPhoneNumber: userData.phoneNumber,
-            photoUrl: userData.imageUrl);
+        String curUserNumber = await ChatPreferences.getPhoneNumber();
+        if (userData.phoneNumber != curUserNumber) {
+          createChatRoomForConversation(
+              toUserName: userData.userName,
+              toUserPhoneNumber: userData.phoneNumber,
+              photoUrl: userData.imageUrl);
+        }
       },
       child: Container(
         color: ThemeColors.white,
         padding: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
         child: ListTile(
-          leading: userData.imageUrl==null || userData.imageUrl.isEmpty
+          leading: userData.imageUrl == null || userData.imageUrl.isEmpty
               ? CircleAvatar(
-            backgroundColor: Colors.grey.shade200,
-            backgroundImage:
-            AssetImage("assets/chat_man.png"),
-            maxRadius: 20,
-          )
+                  backgroundColor: Colors.grey.shade200,
+                  backgroundImage: AssetImage("assets/chat_man.png"),
+                  maxRadius: 20,
+                )
               : AspectRatio(
-            aspectRatio: 1 / 1,
-            child: Container(
-              decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  image: DecorationImage(
-                    fit: BoxFit.cover,
-                    image: NetworkImage(userData.imageUrl),
-                  )),
-            ),
-          ),
+                  aspectRatio: 1 / 1,
+                  child: Container(
+                    decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        image: DecorationImage(
+                          fit: BoxFit.cover,
+                          image: NetworkImage(userData.imageUrl),
+                        )),
+                  ),
+                ),
           title: Text(
             userData.userName,
             style: TextStyle(
@@ -267,11 +279,10 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 }
 
-
-  String getChatRoomId(String user1Number,String user2Number) {
-    if (user1Number.compareTo(user2Number) < 0) {
-      return "$user1Number\_$user2Number";
-    } else {
-      return "$user2Number\_$user1Number";
-    }
+String getChatRoomId(String user1Number, String user2Number) {
+  if (user1Number.compareTo(user2Number) < 0) {
+    return "$user1Number\_$user2Number";
+  } else {
+    return "$user2Number\_$user1Number";
   }
+}

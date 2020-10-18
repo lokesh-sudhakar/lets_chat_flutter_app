@@ -3,6 +3,7 @@ import 'package:chat_app/services/auth.dart';
 import 'package:chat_app/services/database_helper.dart';
 import 'package:chat_app/utils/chat_preference.dart';
 import 'package:chat_app/views/chat_room_screen.dart';
+import 'package:chat_app/views/group_chat/chat_listing_screen.dart';
 import 'package:chat_app/views/sign_up_screen.dart';
 import 'package:chat_app/widgets/common_widgets.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -59,7 +60,9 @@ class _SignInScreenState extends State<SignInScreen> {
       dbHelper.pushFirebaseTokenOnSignin(emailController.text);
       dbHelper.updateUserOnlineStatus(true);
       Navigator.pushReplacement(context, MaterialPageRoute(
-          builder: (context) => ChatRoomScreen()
+          builder: (context) =>
+              //ChatRoomScreen()
+              ChatListingScreen()
       ));
     });
   }

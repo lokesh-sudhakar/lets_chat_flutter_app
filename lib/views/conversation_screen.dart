@@ -174,23 +174,6 @@ class _ConversationScreenState extends State<ConversationScreen> {
             }
         ),
       ),
-//      AppBar(
-//        title: Column(
-//          children: [
-//            Text(widget.toUserName,
-//              style: TextStyle(color: Colors.white,fontSize: 16),
-//            ),
-//            StreamBuilder(
-//              stream: userDataStream,
-//              builder: (context,snapshot) {
-//                return snapshot.hasData? Text(snapshot.data.documents[0].data["online"] ? "Online": "",
-//                  style: TextStyle(color: Colors.white,fontSize: 8),
-//                ):Container();
-//              },
-//            ),
-//          ],
-//        ),
-//      ),
       body: Container(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -219,7 +202,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
                           ),
                           style: textFieldStyle()),
                     ),
-                  Container(
+                    Container(
                         padding: EdgeInsets.symmetric(vertical: 10.0,horizontal: 10),
                         child: FloatingActionButton(
                           onPressed: (){
@@ -229,14 +212,6 @@ class _ConversationScreenState extends State<ConversationScreen> {
                           backgroundColor: ThemeColors.blue,
                           elevation: 0,
                         ),
-
-
-//                        IconButton(
-//                          icon: Icon(
-//                            Icons.send,
-//                            color: Colors.white,
-//                          ),
-//                        ),
                       ),
                   ],
                 ),
