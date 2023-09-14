@@ -24,5 +24,5 @@ Screen shot.
 
 <img width="298" alt="Screenshot 2023-08-30 at 3 21 47 PM" src="https://github.com/lokesh-sudhakar/lets_chat_flutter_app/assets/35700254/08947730-6b83-4b53-bc47-a691f32912ab">
 <img width="283" alt="Screenshot 2023-08-30 at 3 22 16 PM" src="https://github.com/lokesh-sudhakar/lets_chat_flutter_app/assets/35700254/2ea760c3-1c3f-4940-81b2-8e5f3f17f45d">
-![2](https://github.com/lokesh-sudhakar/lets_chat_flutter_app/assets/35700254/80e281ca-81cb-499a-af05-b701c6c68420)
+<img width="283" alt="Screenshot 2023-08-30 at 3 22 16 PM" src="https://github.com/lokesh-sudhakar/lets_chat_flutter_app/assets/35700254/ecf42b91-fee4-4055-b597-1c806fe0f5c1">
 
